@@ -1,0 +1,174 @@
+from pygame import *
+from math import *
+
+init()
+w, h = 1200, 900
+screen = display.set_mode((w, h))
+
+grey = (127, 127, 127)
+blue = (0, 0, 255)
+white = (255, 255, 255)
+dirt = (109, 36, 0)
+
+X = 0
+Y = 1
+W = 2
+H = 3
+ROW = 4
+COL = 5
+
+bg_img = transform.scale(image.load("pics/Sonic BG final.png"), (36720, 4590))
+
+def add_pics(folder, name, start, end):
+    pics = []
+    for i in range(start, end):
+        pics.append(image.load(f"pics/{folder}/{name}{i}.png"))
+    return pics
+
+sonic_right = add_pics("sonic sprites", "sonic", 1, 10)
+sonic_left  = [transform.flip(img, True, False) for img in sonic_right]
+sonic_idle  = [sonic_right[0]]
+sonic_jump  = [image.load("pics/sonic sprites/sonicjump.png")]
+
+sonic_pics = [sonic_right, sonic_left, sonic_idle, sonic_jump]
+
+def get_ground(p, cam):
+    sx = int(p[X] - cam[0] + (p[W] / 2))
+    sy = int(p[Y] - cam[1] + p[H])
+
+    if not (0 <= sx < w):
+        return None
+
+    for y in range(sy, sy + 300):
+        if 0 <= y < h:
+            c = screen.get_at((sx, y))[:3]
+            if all(abs(c[i] - dirt[i]) <= 15 for i in range(3)):
+                return y + cam[1]
+        else:
+            break
+    return None
+
+def update_physics(p, vel, cam, state):
+    p[Y] += vel[1]
+    ground_y = get_ground(p, cam)
+
+    if ground_y is not None:
+        if p[Y] + p[H] >= ground_y - 50:
+            p[Y] = ground_y - 50 - p[H]
+            vel[1] = 0
+            state["jumping"] = False   # ← landed, clear the jump flag
+
+    if p[Y] > h + 200:
+        p[X] = 200
+        p[Y] = 100
+        vel[0] = 0
+        vel[1] = 0
+        state["jumping"] = False
+
+def handle_input(p, vel, state):
+    keys = key.get_pressed()
+
+    if (keys[K_SPACE] or keys[K_UP]) and not state["jumping"]:
+        vel[1] = -25
+        state["jumping"] = True        # ← set flag only when jump key pressed
+
+    if keys[K_LEFT]:
+        vel[0] -= 0.25 + max(0.05, abs(vel[0]) * 0.02)
+    elif keys[K_RIGHT]:
+        vel[0] += 0.25 + max(0.05, abs(vel[0]) * 0.02)
+
+    # ── Sprite selection ─────────────────────────────────────────────────────
+    if state["jumping"]:
+        p[ROW] = 3
+        p[COL] = 0
+    else:
+        moving = keys[K_LEFT] or keys[K_RIGHT]
+
+        if keys[K_LEFT]:
+            p[ROW] = 1
+        elif keys[K_RIGHT]:
+            p[ROW] = 0
+
+        if not moving:
+            p[ROW] = 2
+            p[COL] = 0
+        else:
+            speed = abs(vel[0])
+            p[COL] += 0.1 + speed * 0.03
+            if p[COL] >= len(sonic_pics[p[ROW]]):
+                p[COL] = 1
+
+    # ── Friction / speed cap ─────────────────────────────────────────────────
+    if not (keys[K_LEFT] or keys[K_RIGHT]):
+        if vel[0] > 0:
+            vel[0] -= 0.12 * (1 + abs(vel[0]) * 0.03)
+            if vel[0] < 0: vel[0] = 0
+        elif vel[0] < 0:
+            vel[0] += 0.12 * (1 + abs(vel[0]) * 0.03)
+            if vel[0] > 0: vel[0] = 0
+
+    vel[0] = max(-16, min(16, vel[0]))
+    p[X] += vel[0]
+    vel[1] += 1
+
+def render(p, cam):
+    cam[0] += ((p[X] - w // 2) - cam[0]) * 0.08
+    cam[1] += ((p[Y] - h // 2) - cam[1]) * 0.08
+
+    screen.blit(bg_img, (-cam[0], -2720 - cam[1]))
+
+    frame = sonic_pics[p[ROW]][int(p[COL])]
+    frame_scaled = transform.scale(frame, (p[W], p[H]))
+    screen.blit(frame_scaled, (p[X] - cam[0], p[Y] - cam[1]))
+
+def main_menu():
+    c = time.Clock()
+    btns = [Rect(100, 100, 200, 50), Rect(100, 200, 200, 50)]
+    f = font.SysFont(None, 28)
+
+    while True:
+        screen.fill(grey)
+        mx, my = mouse.get_pos()
+
+        for e in event.get():
+            if e.type == QUIT:
+                return "exit"
+            if e.type == MOUSEBUTTONDOWN and btns[1].collidepoint(mx, my):
+                return "play"
+
+        for b in btns:
+            draw.rect(screen, blue, b)
+
+        screen.blit(f.render("MENU",    True, white), (160, 110))
+        screen.blit(f.render("LEVEL 1", True, white), (130, 210))
+
+        display.flip()
+        c.tick(60)
+
+def play_level():
+    c = time.Clock()
+    p     = [200, 100, 80, 80, 0, 0]
+    vel   = [0, 0]
+    cam   = [0, 0]
+    state = {"jumping": False}         # ← single source of truth for jump
+
+    while True:
+        for e in event.get():
+            if e.type == QUIT or (e.type == KEYDOWN and e.key == K_ESCAPE):
+                return "menu"
+
+        handle_input(p, vel, state)
+        update_physics(p, vel, cam, state)
+        render(p, cam)
+
+        display.flip()
+        c.tick(60)
+
+current = "menu"
+while current != "exit":
+    if current == "menu":
+        current = main_menu()
+    elif current == "play":
+        current = play_level()
+
+quit()
