@@ -981,7 +981,10 @@ def playLevel():
     ]
 
     enemies = [
-        [600, 405, 140, 100, 400, 1000, 2, 0.0]
+        [600, 405, 140, 100, 400, 1000, 2, 0.0],
+        # --- New Crabs (enemies) ---
+        [7923, 264, 140, 100, 7500, 8300, 2, 0.0],
+        [7923, 264, 140, 100, 7500, 8300, 2, 0.0]
     ]
 
     fishes = [
@@ -989,17 +992,39 @@ def playLevel():
     ]
 
     bombers = [
-        [1400, 250, 110, 80, 1100, 1700, 2, 0, False, 0.0]
+        [1400, 250, 110, 80, 1100, 1700, 2, 0, False, 0.0],
+        # --- New Buzzbombers ---
+        [7923, 264, 110, 80, 7600, 8200, 2, 0, False, 0.0],
+        [7923, 264, 110, 80, 7600, 8200, 2, 0, False, 0.0],
+        [7923, 264, 110, 80, 7600, 8200, 2, 0, False, 0.0],
+        [7923, 264, 110, 80, 7600, 8200, 2, 0, False, 0.0],
+        [7923, 264, 110, 80, 7600, 8200, 2, 0, False, 0.0],
+        [7923, 264, 110, 80, 7600, 8200, 2, 0, False, 0.0]
     ]
+    
     projectiles  = []
     droppedCoins = []
 
     winBox  = [2600, 350, 100, 100]
-    jumpPad = [500, 430, 120, 80, False, 0]
+    
+    # Since jumpPad was a single item list before, I converted it into a list of jump pads 
+    # so you can have multiple. Make sure your update/render loops handle iterating through them!
+    jumpPad = [
+        [500, 430, 120, 80, False, 0],
+        # --- New Jump Pads ---
+        [7923, 264, 120, 80, False, 0],
+        [7923, 264, 120, 80, False, 0]
+    ]
 
-    monitor = [1800, 400, 60, 60, False]
+    # Since monitor was a single item list, I converted it to an array of monitors for multiple powerups
+    monitor = [
+        [1800, 400, 60, 60, False],
+        # --- New Powerups (monitors) ---
+        [7923, 264, 60, 60, False],
+        [7923, 264, 60, 60, False]
+    ]
+    
     star    = [0.0, 0.0, False, 0.0]
-
     while True:
         for e in event.get():
             if e.type == QUIT or (e.type == KEYDOWN and e.key == K_ESCAPE):
