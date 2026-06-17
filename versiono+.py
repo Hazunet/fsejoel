@@ -930,32 +930,7 @@ def mainMenu():
 
         display.flip()
         c.tick(60)
-def fixMapClipping(p, vel, cam, isJumping):
-    # Get the exact pixel position of Sonic's middle-feet on the screen canvas
-    sx = int(p[X] - cam[0] + (p[W] / 2))
-    sy = int(p[Y] - cam[1] + p[H])
-    
-    # If he's off-screen horizontally, don't check
-    if sx < 0 or sx >= w:
-        return isJumping
-        
-    # Check a 60-pixel tall safety zone ABOVE his feet 
-    # This catches him if he teleports entirely past the line in one frame
-    for check_y in range(sy - 60, sy + 5):
-        if 0 <= check_y < h:
-            pixel_color = screen.get_at((sx, check_y))[:3]
-            
-            # If we find your exact brown platform line color
-            if pixel_color[0] == 69 and pixel_color[1] == 23 and pixel_color[2] == 0:
-                # Convert the screen coordinate back to the global map Y coordinate
-                actual_ground_y = check_y + cam[1]
-                
-                # Snap Sonic safely on top of it
-                p[Y] = actual_ground_y - 50 - p[H]
-                vel[1] = 0
-                return False  # He is no longer jumping, he landed!
-                
-    return isJumping
+
 def playLevel():
     c = time.Clock()
     p   = [200, 100, 80, 80, 0, 0]
@@ -977,6 +952,32 @@ def playLevel():
         [350,  400, 40, 40, 0.0, False],
         [1000, 400, 40, 40, 0.0, False],
         [1060, 400, 40, 40, 0.0, False],
+        [1143, 359, 40, 40, 0.0, False],
+        [1229, 359, 40, 40, 0.0, False],
+        [1315, 358, 40, 40, 0.0, False],
+        [4039, 131, 40, 40, 0.0, False],
+        [4126, 130, 40, 40, 0.0, False],
+        [4211, 130, 40, 40, 0.0, False],
+        [4299, 130, 40, 40, 0.0, False],
+        [4383, 133, 40, 40, 0.0, False],
+        [5948, 498, 40, 40, 0.0, False],
+        [6064, 559, 40, 40, 0.0, False],
+        [6178, 607, 40, 40, 0.0, False],
+        [6302, 648, 40, 40, 0.0, False],
+        [6446, 659, 40, 40, 0.0, False],
+        [6604, 646, 40, 40, 0.0, False],
+        [6735, 543, 40, 40, 0.0, False],
+        [8947, -212, 40, 40, 0.0, False],
+        [9031, -213, 40, 40, 0.0, False],
+        [10613, -155, 40, 40, 0.0, False],
+        [10697, -154, 40, 40, 0.0, False],
+        [12204, -247, 40, 40, 0.0, False],
+        [12317, -291, 40, 40, 0.0, False],
+        [12439, -360, 40, 40, 0.0, False],
+        [12562, -419, 40, 40, 0.0, False],
+        [16620, 174, 40, 40, 0.0, False],
+        [16706, 178, 40, 40, 0.0, False],
+        [16794, 175, 40, 40, 0.0, False]
     ]
 
     enemies = [
@@ -1032,13 +1033,7 @@ def playLevel():
         invincibility, coinCount, lives = checkEnemyCollision(
             p, vel, invincibility, coinCount, lives, enemies, fishes, bombers, projectiles, droppedCoins, isRolling, godMode
         )
-# ... your enemy updates and movement codes are here ...
 
-        # --- CALL THE SAFETY NET HERE ---
-        isJumping = fixMapClipping(p, vel, cam, isJumping)
-
-
-        # ... your jumpPad, monitors, and render function are down here ...
         playerRect = Rect(p[X], p[Y], p[W], p[H])
 
         if jumpPad[4] == True:

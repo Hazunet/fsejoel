@@ -507,6 +507,12 @@ def updatePhysics(p, vel, cam, isJumping, invincibility, isRolling):
 
 def handleInput(p, vel, isJumping, invincibility, isRolling, xPressedLast, rollFrame):
     keys = key.get_pressed()
+    if keys[K_UP]:
+        p[Y] -= 10   # Fly up (change 10 to a higher number to fly faster)
+    elif keys[K_DOWN]:
+        p[Y] += 10   # Fly down
+        
+    vel[1] = 0
 
     if invincibility < 100 or True:
         if keys[K_SPACE] or keys[K_UP]:
@@ -536,6 +542,7 @@ def handleInput(p, vel, isJumping, invincibility, isRolling, xPressedLast, rollF
                 vel[0] += 0.35
             else:
                 vel[0] += 0.25 + max(0.05, abs(vel[0]) * 0.02)
+        
 
     if isRolling:
         speed = abs(vel[0])
@@ -579,7 +586,7 @@ def handleInput(p, vel, isJumping, invincibility, isRolling, xPressedLast, rollF
     maxSpeed = 22 if isRolling else 16
     vel[0] = max(-maxSpeed, min(maxSpeed, vel[0]))
     p[X] += vel[0]
-    vel[1] += 1
+    vel[1] += 0
 
     MAP_LEFT  = 0
     MAP_RIGHT = 36720
@@ -742,7 +749,7 @@ def mainMenu():
 
 def playLevel():
     c = time.Clock()
-    p   = [200, 100, 80, 80, 0, 0]
+    p   = [200, 250, 80, 80, 0, 0]
     vel = [0, 0]
     cam = [0, 0]
 
